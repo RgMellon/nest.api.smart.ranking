@@ -4,7 +4,6 @@ export const PlayerSchema = new Moongoose.Schema(
   {
     phone: {
       type: String,
-      unique: true,
     },
     email: {
       type: String,

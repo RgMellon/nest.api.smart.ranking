@@ -3,6 +3,7 @@ import { CreatePlayerDto } from './dtos/create-player.dto';
 import { Player } from './interfaces/player.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { UpdatePlayerDto } from './dtos/update-player.dto copy';
 
 @Injectable()
 export class PlayersService {
@@ -12,23 +13,24 @@ export class PlayersService {
     @InjectModel('Player') private readonly playerModel: Model<Player>,
   ) {}
 
-  async createUpdatePlayer(payload: CreatePlayerDto): Promise<void> {
+  async createPlayer(payload: CreatePlayerDto): Promise<void> {
     this.logger.log(`payload ${JSON.stringify(payload)}}`);
 
-    const { email } = payload;
+    this.create(payload);
+  }
 
+  async updatePlayer(id: string, payload: UpdatePlayerDto): Promise<void> {
     const found = await this.playerModel
       .findOne({
-        email,
+        _id: id,
       })
       .exec();
 
     if (found) {
-      this.update(payload);
-      return;
+      this.update(payload, id);
     }
 
-    this.create(payload);
+    throw new NotFoundException(`Player with id ${id} not found.`);
   }
 
   async getAllPlayers(): Promise<Player[]> {
@@ -40,17 +42,17 @@ export class PlayersService {
     return await newPlayer.save();
   }
 
-  private async update(payload: CreatePlayerDto): Promise<Player> {
+  private async update(payload: UpdatePlayerDto, id: string): Promise<Player> {
     return await this.playerModel
-      .findByIdAndUpdate({ email: payload.email }, { $set: payload })
+      .findByIdAndUpdate({ _id: id }, { $set: payload })
       .exec();
   }
 
-  async getPlayerByEmail(email: string): Promise<Player> {
-    const foundPlayer = await this.playerModel.findOne({ email }).exec();
+  async getPlayerById(id: string): Promise<Player> {
+    const foundPlayer = await this.playerModel.findOne({ id }).exec();
 
     if (!foundPlayer) {
-      throw new NotFoundException(`Player with email ${email} not found.`);
+      throw new NotFoundException(`Player with email ${id} not found.`);
     }
 
     return foundPlayer;
