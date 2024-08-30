@@ -15,7 +15,6 @@ export class CategoriesService {
 
   async create(payload: CreateCategoryDto): Promise<Category> {
     const { category } = payload;
-    console.log('Oi', category);
 
     const foundCategory = await this.categoryModel
       .findOne({
@@ -113,5 +112,19 @@ export class CategoriesService {
     if (!updatedCategory) {
       throw new Error(`Category ${category} not found.`);
     }
+  }
+
+  async getCategoryByPlayer(playerId: any): Promise<Category> {
+    const foundPlayer = await this.playerService.getPlayerById(playerId);
+
+    if (!foundPlayer) {
+      throw new BadRequestException(`Player with ID ${playerId} not exists`);
+    }
+
+    return await this.categoryModel
+      .findOne()
+      .where('players')
+      .in(playerId)
+      .exec();
   }
 }
